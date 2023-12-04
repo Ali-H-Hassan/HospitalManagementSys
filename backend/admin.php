@@ -2,10 +2,10 @@
 include 'db.php';
 
 // Function to add a new doctor
-function addDoctor($name, $specialization) {
+function addDoctor($name, $specialty) {
     global $conn;
 
-    $sql = "INSERT INTO doctors (name, specialization) VALUES ('$name', '$specialization')";
+    $sql = "INSERT INTO doctors (name, specialty) VALUES ('$name', '$specialty')";
 
     if ($conn->query($sql) === TRUE) {
         return true;

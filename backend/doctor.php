@@ -5,7 +5,7 @@ include 'db.php';
 function viewPatientRecords($doctorId) {
     global $conn;
 
-    $sql = "SELECT * FROM patients WHERE assigned_doctor_id = $doctorId";
+    $sql = "SELECT * FROM Patients WHERE room_number = $doctorId";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
@@ -19,7 +19,7 @@ function viewPatientRecords($doctorId) {
 function prescribeMedications($patientId, $medications) {
     global $conn;
 
-    $sql = "UPDATE patients SET medications = '$medications' WHERE id = $patientId";
+    $sql = "UPDATE Patients SET medications = '$medications' WHERE id = $patientId";
 
     if ($conn->query($sql) === TRUE) {
         return true;
@@ -28,7 +28,7 @@ function prescribeMedications($patientId, $medications) {
     }
 }
 
-// Function to manage appointments
+// Function to manage appointments (to be implemented)
 function manageAppointments($doctorId) {
     // Add functionality to manage appointments (calendar of availabilities)
 }
