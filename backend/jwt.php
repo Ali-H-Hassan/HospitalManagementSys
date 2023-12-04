@@ -1,32 +1,34 @@
 <?php
+
 require __DIR__ . '/vendor/autoload.php';
 
-use \Firebase\JWT\JWT;
+use Firebase\JWT\JWT;
 
-// Your secret key for encoding/decoding JWTs
-$key = "your_secret_key";
+// Define your secret key for encoding/decoding JWTs
+$secretKey = 'your_secret_key'; // Replace with a secure, unique key
 
-// Function to generate JWT
-function generateJWT($user_id, $role) {
-    global $key;
-    $payload = array(
-        "user_id" => $user_id,
-        "role" => $role,
-        "iat" => time(),
-        "exp" => time() + (60 * 60 * 24)  // Token expires in 24 hours
-    );
+// Function to generate a JWT for a user
+function generateJWT($userId, $userType) {
+    global $secretKey;
 
-    $jwt = JWT::encode($payload, $key);
-    return $jwt;
+    $tokenPayload = [
+        'user_id' => $userId,
+        'user_type' => $userType,
+        'exp' => time() + (60 * 60) // Token expiration time (1 hour)
+    ];
+
+    return JWT::encode($tokenPayload, $secretKey, 'HS256');
 }
 
-// Function to verify JWT
-function verifyJWT($jwt) {
-    global $key;
+// Function to verify and decode a JWT
+function verifyAndDecodeJWT($jwt) {
+    global $secretKey;
+
     try {
-        $decoded = JWT::decode($jwt, $key, array('HS256'));
+        $decoded = JWT::decode($jwt, $secretKey, ['HS256']);
         return $decoded;
     } catch (Exception $e) {
-        return false;
+        return null;
     }
 }
+?>

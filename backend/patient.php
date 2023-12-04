@@ -1,6 +1,32 @@
 <?php
 include 'db.php';
+include 'jwt.php';
 
+// Check JWT for authentication
+$headers = getallheaders();
+$jwt = $headers['Authorization'] ?? '';
+
+$decodedJWT = verifyAndDecodeJWT($jwt);
+
+if (!$decodedJWT) {
+    http_response_code(401); // Unauthorized
+    exit();
+}
+
+// Check user type and perform authorization checks
+$userType = $decodedJWT->user_type;
+
+// Perform authorization checks based on user type
+if ($userType === 'admin') {
+    // Authorized for admin actions
+} elseif ($userType === 'doctor') {
+    // Authorized for doctor actions
+} elseif ($userType === 'patient') {
+    // Authorized for patient actions
+} else {
+    http_response_code(403); // Forbidden
+    exit();
+}
 // Function to view personal medical history
 function viewMedicalHistory($patientId) {
     global $conn;
