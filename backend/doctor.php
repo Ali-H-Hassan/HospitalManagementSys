@@ -5,33 +5,41 @@ include 'jwt.php';
 // Check JWT for authentication
 $headers = getallheaders();
 $jwt = $headers['Authorization'] ?? '';
+$jwt = str_replace('Bearer ', '', $jwt);
 
 $decodedJWT = verifyAndDecodeJWT($jwt);
 
-if (!$decodedJWT) {
+if (!$decodedJWT || $decodedJWT->user_type !== 'patient') {
     http_response_code(401); // Unauthorized
     exit();
 }
 
-// Check user type and perform authorization checks
-$userType = $decodedJWT->user_type;
+// User is authenticated as a patient; you can perform additional authorization checks if needed
 
-// Perform authorization checks based on user type
-if ($userType === 'admin') {
-    // Authorized for admin actions
-} elseif ($userType === 'doctor') {
-    // Authorized for doctor actions
-} elseif ($userType === 'patient') {
-    // Authorized for patient actions
-} else {
-    http_response_code(403); // Forbidden
-    exit();
-}
-// Function to view patient records
-function viewPatientRecords($doctorId) {
+// Rest of your code for handling the authenticated patient
+
+// Function to view personal medical history
+function viewMedicalHistory($patientId) {
     global $conn;
 
-    $sql = "SELECT * FROM Patients WHERE room_number = $doctorId";
+    $sql = "SELECT * FROM patients WHERE id = $patientId";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        return $result->fetch_assoc();
+    } else {
+        return null;
+    }
+}
+
+// Function to view upcoming appointments
+function viewUpcomingAppointments($patientId) {
+    global $conn;
+
+    // Assuming current date and time
+    $currentDate = date('Y-m-d H:i:s');
+
+    $sql = "SELECT * FROM Appointments WHERE patient_id = $patientId AND appointment_date > '$currentDate'";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
@@ -41,11 +49,11 @@ function viewPatientRecords($doctorId) {
     }
 }
 
-// Function to prescribe medications
-function prescribeMedications($patientId, $medications) {
+// Function to book an appointment
+function bookAppointment($patientId, $doctorId, $date) {
     global $conn;
 
-    $sql = "UPDATE Patients SET medications = '$medications' WHERE id = $patientId";
+    $sql = "INSERT INTO Appointments (doctor_id, patient_id, appointment_date) VALUES ($doctorId, $patientId, '$date')";
 
     if ($conn->query($sql) === TRUE) {
         return true;
@@ -54,8 +62,16 @@ function prescribeMedications($patientId, $medications) {
     }
 }
 
-// Function to manage appointments (to be implemented)
-function manageAppointments($doctorId) {
-    // Add functionality to manage appointments (calendar of availabilities)
+// Function to cancel an appointment
+function cancelAppointment($patientId, $appointmentId) {
+    global $conn;
+
+    $sql = "DELETE FROM Appointments WHERE id = $appointmentId AND patient_id = $patientId";
+
+    if ($conn->query($sql) === TRUE) {
+        return true;
+    } else {
+        return false;
+    }
 }
 ?>

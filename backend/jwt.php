@@ -27,8 +27,10 @@ function verifyAndDecodeJWT($jwt) {
     try {
         $decoded = JWT::decode($jwt, $secretKey, ['HS256']);
         return $decoded;
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         return null;
     }
 }
-?>
+
+
+

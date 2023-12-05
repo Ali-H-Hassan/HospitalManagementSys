@@ -8,7 +8,7 @@ $jwt = $headers['Authorization'] ?? '';
 
 $decodedJWT = verifyAndDecodeJWT($jwt);
 
-if (!$decodedJWT) {
+if (!$decodedJWT || $decodedJWT->user_type !== 'admin') {
     http_response_code(401); // Unauthorized
     exit();
 }
@@ -17,71 +17,38 @@ if (!$decodedJWT) {
 $userType = $decodedJWT->user_type;
 
 // Perform authorization checks based on user type
-if ($userType === 'admin') {
-    // Authorized for admin actions
-} elseif ($userType === 'doctor') {
-    // Authorized for doctor actions
-} elseif ($userType === 'patient') {
-    // Authorized for patient actions
-} else {
+if ($userType !== 'admin') {
     http_response_code(403); // Forbidden
     exit();
 }
-// Function to add a new doctor
-function addDoctor($name, $specialty) {
-    global $conn;
 
-    $sql = "INSERT INTO doctors (name, specialty) VALUES ('$name', '$specialty')";
+// Handle admin actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check the action parameter to determine the action
+    $action = $_POST['action'] ?? '';
 
-    if ($conn->query($sql) === TRUE) {
-        return true;
-    } else {
-        return false;
+    // Handle the actions accordingly
+    switch ($action) {
+        case 'addDoctor':
+            $name = $_POST['name'] ?? '';
+            $specialty = $_POST['specialty'] ?? '';
+            
+            if (addDoctor($name, $specialty)) {
+                echo 'Doctor added successfully!';
+            } else {
+                echo 'Failed to add doctor.';
+            }
+            break;
+        
+        case 'getAllDoctors':
+            $doctors = getAllDoctors();
+            echo json_encode($doctors);
+            break;
+            
+        default:
+            echo 'Invalid action.';
     }
+} else {
+    echo 'Invalid request method.';
 }
-
-// Function to get all doctors
-function getAllDoctors() {
-    global $conn;
-
-    $sql = "SELECT * FROM doctors";
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        return $result->fetch_all(MYSQLI_ASSOC);
-    } else {
-        return [];
-    }
-}
-
-// Add similar functions for updating and deleting doctors
-
-// Function to add a new patient
-function addPatient($name, $illness) {
-    global $conn;
-
-    $sql = "INSERT INTO patients (name, illness) VALUES ('$name', '$illness')";
-
-    if ($conn->query($sql) === TRUE) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-// Function to get all patients
-function getAllPatients() {
-    global $conn;
-
-    $sql = "SELECT * FROM patients";
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        return $result->fetch_all(MYSQLI_ASSOC);
-    } else {
-        return [];
-    }
-}
-
-// Add similar functions for updating and deleting patients
 ?>
